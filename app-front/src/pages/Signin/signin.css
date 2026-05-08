@@ -1,0 +1,95 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+.login-container {
+ min-height: 100vh; 
+  min-width: 100vw;     
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #ffffff, #008000); 
+  font-family: Arial, sans-serif;   
+}
+
+.login-form {
+    background: white;
+    padding: 30px;
+    border-radius: 14px;
+   width :400px;
+    
+}
+
+.logo-plateforme {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.logo-plateforme img {
+    width: 80px;
+    height: 80px;
+}
+
+.logo-platefrome h2 {
+    font-size: 16px;
+    margin-top: 5px;
+}
+ .slogan {
+    font-size: 12px;       
+    color: black;          
+    margin-top: 5px;
+    font-weight:  Bold;
+    font-family: Arial;
+    text-align: center;  
+}
+
+.labels {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+}
+.labels label {
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.labels input {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    outline: none;
+    transition: 0.3s;
+}
+
+.labels input:focus {
+    border-color: #4facfe;
+}
+
+.login-btn {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    background: green;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+.login-btn:hover {
+    background: rgb(1, 42, 1);
+}
+
+.links {
+    margin-top: 15px;
+    text-align: center;
+    font-size: 14px;
+}
+.links a {
+    color: green;
+    text-decoration: none;
+}
+.links a:hover {
+    text-decoration: underline;
+}

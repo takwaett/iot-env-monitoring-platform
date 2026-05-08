@@ -1,0 +1,122 @@
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background-color: #f8f9fa;
+}
+
+.sidebarContainer {
+  background-color: #1a1a2e;
+  transition: width 0.3s ease-in-out;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.mainZone {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.content {
+  padding: 30px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.headerSection {
+  margin-bottom: 25px;
+}
+
+.headerSection h1 {
+  margin: 0 0 5px 0;
+  font-size: 1.8rem;
+  color: #1e293b;
+}
+
+.headerSection p {
+  margin: 0;
+  color: #64748b;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 25px;
+}
+
+.card {
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  border: 1px solid #f1f5f9;
+}
+
+.card h4 {
+  margin: 0 0 20px 0;
+  color: #1e2235;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.inputWrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.inputWrapper label {
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 5px;
+}
+
+.inputWrapper input {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.submitBtn {
+  margin-top: 10px;
+  padding: 14px;
+  background: #1a1a2e;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.securityList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.infoLabel {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.infoValue {
+  margin: 5px 0;
+  font-weight: bold;
+  color: #1e293b;
+}
+
+.statusBadge {
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  background: #dcfce7;
+  color: #10b981;
+  font-weight: bold;
+}
