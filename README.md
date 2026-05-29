@@ -14,7 +14,9 @@ L’objectif est d’exploiter les technologies IoT pour collecter, transmettre,
 ## Firmware (Microcontrôleur)
 
 - C++ / Arduino Framework
-- PlatformIO
+## Logiciel de simulation
+-SimulIDE
+
 
 ## Backend
 
