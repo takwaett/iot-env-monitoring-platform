@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react'; 
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import logo from '../../../assets/logo.png'; 
+import logo from '../../../assets/logo.png';
 
 
 function Sidebar() {
   const navigate = useNavigate();
-  const [alertCount, setAlertCount] = useState(0); 
-  const [isOpen, setIsOpen] = useState(true); 
+  const [alertCount, setAlertCount] = useState(0);
+  const [isOpen, setIsOpen] = useState(true);
 
   useEffect(() => {
     const fetchAlertsCount = async () => {
@@ -19,7 +19,7 @@ function Sidebar() {
         });
         if (response.ok) {
           const data = await response.json();
-          setAlertCount(data.length); 
+          setAlertCount(data.length);
         }
       } catch (err) {
         console.error("Erreur badge sidebar:", err);
@@ -27,15 +27,15 @@ function Sidebar() {
     };
 
     fetchAlertsCount();
-   
+
     const interval = setInterval(fetchAlertsCount, 30000);
     return () => clearInterval(interval);
   }, []);
 
   const handleLogout = (e) => {
     e.preventDefault();
-    localStorage.clear(); 
-    window.location.href = '/'; 
+    localStorage.clear();
+    window.location.href = '/';
   };
 
   return (
@@ -52,18 +52,18 @@ function Sidebar() {
         <ul>
           <li><Link to="/dashboard">📊 Dashboard</Link></li>
           <li><Link to="/historique">📋 Historique</Link></li>
-          
+
           <li style={{ display: 'flex', alignItems: 'center' }}>
             <Link to="/alertes" style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
               🔔 Alertes
               {alertCount > 0 && (
                 <span style={{
-                  backgroundColor: '#d32f2f', 
+                  backgroundColor: '#d32f2f',
                   color: 'white',
                   borderRadius: '10px',
                   padding: '1px 7px',
                   fontSize: '0.7rem',
-                  marginLeft: 'auto', 
+                  marginLeft: 'auto',
                   marginRight: '10px',
                   fontWeight: 'bold',
                   boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
@@ -78,6 +78,8 @@ function Sidebar() {
           <li><Link to="/capteurs">📡 Capteurs</Link></li>
           <li><Link to="/seuils">🎚️ Seuils</Link></li>
           <li><Link to="/satellite">🛰️ Sattelite</Link></li>
+          <li><Link to="/rapports">📄 Rapports</Link></li>
+          <li><Link to="/gaz">🧪 Gaz</Link></li>
         </ul>
 
         <p className="nav-title">COMPTE</p>

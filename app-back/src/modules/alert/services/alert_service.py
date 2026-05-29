@@ -1,14 +1,17 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy.orm import joinedload # jointures
+from sqlalchemy.orm import joinedload
 from src.modules.alert.models.alert_model import AlertModel
+from src.modules.node.models.node_model import NodeModel  # Importation indispensable pour la jointure
 
 class AlertService:
-    # récupération de  TOUTES LES ALERTES 
-    async def get_all_alerts(self, db: AsyncSession):
+    # 1. RÉCUPÉRATION DE TOUTES LES ALERTES DE L'UTILISATEUR
+    async def get_all_alerts(self, db: AsyncSession, user_id: int):
         try:
             query = (
                 select(AlertModel)
+                .join(NodeModel, AlertModel.node_id == NodeModel.id)
+                .where(NodeModel.user_id == user_id)
                 .options(joinedload(AlertModel.node), joinedload(AlertModel.sensor))
                 .order_by(AlertModel.created_at.desc())
             )
@@ -18,11 +21,14 @@ class AlertService:
             print(f"❌ Erreur SQL dans get_all_alerts: {e}")
             raise e
 
-    # récupération des alertes de type danger
-    async def get_danger_alerts(self, db: AsyncSession):
+    # 2. RÉCUPÉRATION DES ALERTES DE TYPE DANGER DE L'UTILISATEUR
+    async def get_danger_alerts(self, db: AsyncSession, user_id: int):
         try:
+            # CORRECTION : Ajout du filtre de statut "danger" + filtrage par user_id
             query = (
                 select(AlertModel)
+                .join(NodeModel, AlertModel.node_id == NodeModel.id)
+                .where(NodeModel.user_id == user_id, AlertModel.alert == "danger")
                 .options(joinedload(AlertModel.node), joinedload(AlertModel.sensor))
                 .order_by(AlertModel.created_at.desc())
             )
@@ -32,10 +38,14 @@ class AlertService:
             print(f"❌ Erreur SQL dans get_danger_alerts: {e}")
             raise e
 
-    # suppression
-    async def delete_alert(self, db: AsyncSession, alert_id: int):
+    # 3. SUPPRESSION SÉCURISÉE D'UNE ALERTE
+    async def delete_alert(self, db: AsyncSession, alert_id: int, user_id: int):
         try:
-            query = select(AlertModel).where(AlertModel.id == alert_id)
+            query = (
+                select(AlertModel)
+                .join(NodeModel, AlertModel.node_id == NodeModel.id)
+                .where(AlertModel.id == alert_id, NodeModel.user_id == user_id)
+            )
             result = await db.execute(query)
             alert = result.scalar_one_or_none()
             if alert:
@@ -47,10 +57,14 @@ class AlertService:
             await db.rollback()
             return False
 
-    # modification
-    async def update_alert(self, db: AsyncSession, alert_id: int, alert_data):
+    # 4. MODIFICATION SÉCURISÉE D'UNE ALERTE
+    async def update_alert(self, db: AsyncSession, alert_id: int, alert_data, user_id: int):
         try:
-            query = select(AlertModel).where(AlertModel.id == alert_id)
+            query = (
+                select(AlertModel)
+                .join(NodeModel, AlertModel.node_id == NodeModel.id)
+                .where(AlertModel.id == alert_id, NodeModel.user_id == user_id)
+            )
             result = await db.execute(query)
             db_alert = result.scalar_one_or_none()
             if db_alert:

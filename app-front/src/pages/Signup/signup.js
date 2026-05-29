@@ -8,33 +8,43 @@ function Inscription() {
     const [Nom, setNom] = useState('');
     const [Prenom, setPrenom] = useState(''); 
     const [Email, setEmail] = useState('');
+    // Note: Votre DTO Backend n'a pas de champ téléphone, je le garde en local seulement
     const [NumeroDeTelephone, setNumeroDeTelephone] = useState(''); 
     const [Password, setPassword] = useState('');
     const [ConfirmPassword, setConfirmPassword] = useState(''); 
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false); // Ajout d'un état de chargement
     const navigate = useNavigate();
 
     const handleRegister = async (e) => {
         e.preventDefault();
         setError('');
+        setLoading(true);
 
         if (Password !== ConfirmPassword) {
+            setLoading(false);
             return setError("Les mots de passe ne correspondent pas.");
         }
 
+        // Préparation des données pour correspondre exactement à votre UserCreate DTO
         const userData = {
             nom: Nom,
             prenom: Prenom,
             email: Email,
-            motDePasse: Password 
+            motDePasse: Password,
+            role: "user" // Valeur par défaut
         };
 
         try {
             await register(userData);
-            alert("Compte créé avec succès ! Connectez-vous.");
-            navigate('/'); 
+            
+            
+            navigate('/verify-email', { state: { email: Email } }); 
+            
         } catch (err) {
             setError(err.response?.data?.detail || "Erreur lors de l'inscription.");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -47,7 +57,7 @@ function Inscription() {
                     <p className="slogan">SMART ENVIRONMENTAL MONITORING</p>
                 </div>
                
-                {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
+                {error && <p className="error-text" style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
 
                 <div className="labels">
                     <label>Nom</label>
@@ -79,6 +89,7 @@ function Inscription() {
                         required
                     />
                 </div>
+                {/* Champ téléphone (optionnel pour le front, ignoré par le DTO actuel) */}
                 <div className="labels">
                     <label>Numéro de téléphone</label>
                     <input
@@ -89,7 +100,7 @@ function Inscription() {
                     />
                 </div>
                 <div className="labels">
-                    <label>mot de passe</label>
+                    <label>Mot de passe</label>
                     <input
                         type="password"
                         placeholder="Entrez votre mot de passe"
@@ -114,9 +125,13 @@ function Inscription() {
                     <label htmlFor="terms">J'accepte les conditions d'utilisation</label>
                 </div>   
                 
-                <button type="submit" className="inscription-btn">s'inscrire</button>
+                <button type="submit" className="inscription-btn" disabled={loading}>
+                    {loading ? "Chargement..." : "S'inscrire"}
+                </button>
                  
-                <p className="se-connecter"> Déjà inscrit ? <Link to="/" className="Links">Retour à la page de connexion</Link></p>
+                <p className="se-connecter"> 
+                    Déjà inscrit ? <Link to="/" className="Links">Retour à la page de connexion</Link>
+                </p>
             </form>
         </div>
     );

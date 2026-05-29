@@ -16,11 +16,12 @@ class UserResponse(BaseModel):
     id: int
     nom: str
     prenom: str
-    email: str
+    email: EmailStr
     role: RoleEnum
+    is_verified: bool  # Ajouté pour correspondre au UserModel
 
     class Config:
-        from_attributes = True
+        from_attributes = True  # Permet de lire les objets SQLAlchemy directement
 
 class Token(BaseModel):
     access_token: str
@@ -33,4 +34,3 @@ class PasswordResetConfirm(BaseModel):
     email: EmailStr
     code: str
     newPassword: str
-

@@ -1,3 +1,4 @@
+# src/modules/sensor/models/sensor_model.py
 from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, func
 from src.utils.database import Base
 from sqlalchemy.orm import relationship
@@ -13,12 +14,14 @@ class SensorModel(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())   
 
-    
-    # capteur lié à un noeud
+    # Capteur lié à un noeud
     node_id = Column(Integer, ForeignKey("nodes.id"), nullable=False)
     
-    #lien vers noeud parent
+    # Lien vers noeud parent
     node = relationship("NodeModel", back_populates="sensors")
-    thresholds = relationship("ThresholdModel", back_populates="sensor")
-    measurement = relationship("MeasurementModel", back_populates="sensor")
-    alerts = relationship("AlertModel", back_populates="sensor")
+
+    # ================= CORRECTION : AJOUT DES CASCADES =================
+    # Ces lignes permettent de supprimer les données liées sans erreur d'intégrité SQL
+    thresholds = relationship("ThresholdModel", back_populates="sensor", cascade="all, delete-orphan")
+    measurement = relationship("MeasurementModel", back_populates="sensor", cascade="all, delete-orphan")
+    alerts = relationship("AlertModel", back_populates="sensor", cascade="all, delete-orphan")

@@ -63,3 +63,4 @@ export const getDashboardStats = async () => {
         return { total_noeuds: 0, actifs: 0, capteurs: 0, alertes_danger: 0 };
     }
 };
+

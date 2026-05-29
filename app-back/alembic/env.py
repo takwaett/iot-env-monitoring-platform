@@ -1,3 +1,9 @@
+import os
+from dotenv import load_dotenv
+
+# Charger le fichier .env AVANT d'importer les modèles
+load_dotenv()
+
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config

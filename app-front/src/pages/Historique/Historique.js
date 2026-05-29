@@ -17,7 +17,8 @@ function Historique() {
   const [nodesMap, setNodesMap] = useState({});
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   
   const navigate = useNavigate();
   const BASE_URL = "http://localhost:8000";
@@ -76,15 +77,115 @@ function Historique() {
     } catch (err) { console.error("Erreur History:", err); }
   }, [navigate, BASE_URL]);
 
+  // FONCTION EXPORT CSV CORRIGÉE - Utilise l'endpoint public
+  const exportToCSV = useCallback(async () => {
+    setExporting(true);
+    try {
+      // Construire les paramètres de filtrage pour l'API
+      const params = new URLSearchParams();
+      
+      // Ajouter les filtres actifs
+      if (capteurFilter !== 'all') {
+        params.append('sensor_id', capteurFilter);
+      }
+      if (noeudFilter !== 'all') {
+        params.append('node_id', noeudFilter);
+      }
+      if (date) {
+        params.append('start_date', date);
+        params.append('end_date', date);
+      }
+      
+      const queryString = params.toString();
+      // CORRECTION: Utilisation de l'endpoint public /export/public
+      const url = `${BASE_URL}/measurements/export/public${queryString ? `?${queryString}` : ''}`;
+      
+      console.log("URL d'export:", url);
+      
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
+      // Récupérer le blob CSV
+      const blob = await response.blob();
+      
+      // Extraire le nom du fichier de l'en-tête Content-Disposition
+      const contentDisposition = response.headers.get('content-disposition');
+      let filename = `measurements_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.csv`;
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename=(.+)/);
+        if (match) filename = match[1];
+      }
+      
+      // Télécharger le fichier
+      const urlBlob = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = urlBlob;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(urlBlob);
+      
+    } catch (error) {
+      console.error("Erreur export CSV:", error);
+      alert("Erreur lors de l'export des données. Veuillez réessayer.");
+    } finally {
+      setExporting(false);
+    }
+  }, [BASE_URL, capteurFilter, noeudFilter, date]);
+
   useEffect(() => { 
     if (!loading) { 
       fetchMetadata(); 
       fetchHistory(); 
     }
   }, [fetchMetadata, fetchHistory, loading]);
+  
   if (loading) {
     return <div>Chargement...</div>;
   }
+
+  // Fonction pour exporter les données actuellement affichées (alternative côté client)
+  const exportCurrentView = () => {
+    if (filteredRows.length === 0) {
+      alert("Aucune donnée à exporter");
+      return;
+    }
+    
+    // Préparer les en-têtes CSV
+    const headers = ['id', 'sensor_id', 'sensor_name', 'type', 'value', 'created_at', 'node_name'];
+    const csvRows = [headers];
+    
+    // Ajouter les données filtrées
+    filteredRows.forEach(row => {
+      const sensorName = sensorsData[row.sensor_id]?.name || sensorsData[row.sensor_id]?.nom || `Capteur ${row.sensor_id}`;
+      const sensorType = sensorsData[row.sensor_id]?.type || '';
+      const nodeName = nodesMap[sensorsData[row.sensor_id]?.node_id] || "Non assigné";
+      
+      csvRows.push([
+        row.id,
+        row.sensor_id,
+        sensorName,
+        sensorType,
+        row.value,
+        row.created_at,
+        nodeName
+      ]);
+    });
+    
+    // Créer et télécharger le CSV
+    const csvContent = csvRows.map(row => row.map(cell => `"${cell || ''}"`).join(',')).join('\n');
+    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `mesures_export_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.csv`;
+    link.click();
+    window.URL.revokeObjectURL(url);
+  };
 
   const columns = [
     { field: 'created_at', headerName: 'Horodatage', flex: 1.2, valueFormatter: (value) => value ? new Date(value).toLocaleString('fr-FR') : '' },
@@ -161,18 +262,12 @@ function Historique() {
               value={date}
             />
             
-            <input 
-              type="date" 
-              style={{ padding: '8.5px', borderRadius: '4px', border: '1px solid #ccc', width: '130px' }} 
-              onChange={(e) => setDate(e.target.value)} 
-              value={date}
-            />
             <Box sx={{ flexGrow: 1 }} />
             
             <Button 
               variant="contained" 
               onClick={() => { fetchHistory(); }}
-              sx={{ bgcolor: '#161c2f', fontWeight: 'bold', px: 2, '&:hover': { bgcolor: '#232d4a' } }}
+              sx={{ bgcolor: '#161c2f', fontWeight: 'bold', px: 2, minWidth: '120px', '&:hover': { bgcolor: '#232d4a' } }}
             >
               VOIR TOUT
             </Button>
@@ -180,9 +275,40 @@ function Historique() {
             <Button 
               variant="contained" 
               onClick={() => { setDate(""); setCapteurFilter("all"); setNoeudFilter("all"); fetchHistory(); }}
-              sx={{ bgcolor: '#161c2f', fontWeight: 'bold', px: 2 }}
+              sx={{ bgcolor: '#161c2f', fontWeight: 'bold', px: 2, minWidth: '120px', '&:hover': { bgcolor: '#232d4a' } }}
             >
               Réinitialiser
+            </Button>
+
+            <Button 
+              variant="contained" 
+              onClick={exportToCSV}
+              disabled={exporting}
+              sx={{ 
+                bgcolor: '#28a745', 
+                fontWeight: 'bold', 
+                px: 2, 
+                minWidth: '160px',
+                '&:hover': { bgcolor: '#218838' },
+                '&.Mui-disabled': { bgcolor: '#6c757d' }
+              }}
+            >
+              {exporting ? '📥 Export en cours...' : '📥 Exporter CSV'}
+            </Button>
+
+            <Button 
+              variant="outlined" 
+              onClick={exportCurrentView}
+              sx={{ 
+                borderColor: '#17a2b8', 
+                color: '#17a2b8',
+                fontWeight: 'bold',
+                px: 2,
+                minWidth: '160px',
+                '&:hover': { borderColor: '#138496', backgroundColor: '#e0f7fa' }
+              }}
+            >
+              📋 Export Vue Actuelle
             </Button>
           </Paper>
 

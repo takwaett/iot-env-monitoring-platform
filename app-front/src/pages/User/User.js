@@ -13,9 +13,23 @@ function User() {
   const [updateMessage, setUpdateMessage] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState(null);
+  
+  // État pour les alertes email - stocké dans localStorage pour l'instant
+  const [emailAlertsEnabled, setEmailAlertsEnabled] = useState(() => {
+    const saved = localStorage.getItem('emailAlertsEnabled');
+    return saved === 'true';
+  });
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  // Sauvegarde de la préférence email
+  const handleEmailPreferenceChange = (checked) => {
+    setEmailAlertsEnabled(checked);
+    localStorage.setItem('emailAlertsEnabled', checked);
+    setUpdateMessage(checked ? "✅ Notifications email activées" : "✅ Notifications email désactivées");
+    setTimeout(() => setUpdateMessage(''), 3000);
   };
 
   useEffect(() => {
@@ -147,6 +161,7 @@ function User() {
             gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', 
             gap: '20px' 
           }}>
+            {/* Carte Informations Personnelles */}
             <section style={{ 
               background: 'white', 
               padding: '25px', 
@@ -307,6 +322,8 @@ function User() {
                 </form>
               )}
             </section>
+
+            {/* Carte Sécurité & Compte */}
             <section style={{ 
               background: 'white', 
               padding: '25px', 
@@ -343,6 +360,10 @@ function User() {
                     ACTIF
                   </span>
                 </div>
+
+                
+                  
+
                 <div style={{ 
                   marginTop: '15px', 
                   padding: '12px', 
@@ -353,6 +374,7 @@ function User() {
                 }}>
                   🔐 <strong>Sécurité :</strong> Votre compte est protégé.
                 </div>
+                
                 {isAdmin && (
                   <div style={{ 
                     marginTop: '5px', 

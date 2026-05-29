@@ -1,9 +1,10 @@
+// Body.js - Version corrigée qui FORCE le rafraîchissement des données
 import React, { useState, useEffect } from 'react';
 import './Body.css';
-import { getDashboardStats } from '../../../api/auth';
+import axios from 'axios'; // ✅ Ajoutez axios
 import Graphes from '../../Graphes/Graphes';
-import MeteoJour from '../../Layout/MeteoJour/MeteoJour'; 
-import { Grid, Box, Typography, Dialog, DialogTitle, DialogContent, IconButton } from '@mui/material';
+import MeteoJour from '../../Layout/MeteoJour/MeteoJour';
+import { Box, Typography, Dialog, DialogTitle, DialogContent, IconButton } from '@mui/material';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -12,49 +13,107 @@ function Body() {
     const [alertes, setAlertes] = useState([]);
     const [alerteData, setAlerteData] = useState([]);
     const [selectedAlerte, setSelectedAlerte] = useState(null);
+    const [currentUserEmail, setCurrentUserEmail] = useState(null); // ✅ Pour traquer l'utilisateur
 
-    const BASE_URL = "http://localhost:8000";
+    const API_BASE_URL = "http://localhost:8000";
+
+    // ✅ Fonction pour obtenir le token
+    const getToken = () => localStorage.getItem('token');
+
+    // ✅ Fonction pour charger les données de l'utilisateur courant
+    const loadUserData = async () => {
+        const token = getToken();
+        if (!token) return;
+
+        try {
+            // 1. Récupérer d'abord le profil utilisateur courant
+            const profileResponse = await axios.get(`${API_BASE_URL}/auth/me`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            
+            const currentUser = profileResponse.data;
+            const userEmail = currentUser.email;
+            
+            // ✅ Si l'utilisateur a changé, on recharge TOUTES les données
+            if (currentUserEmail && currentUserEmail !== userEmail) {
+                console.log("🔄 Changement d'utilisateur détecté, rechargement...");
+            }
+            
+            setCurrentUserEmail(userEmail);
+            
+            // 2. Charger les stats (maintenant filtrées par backend)
+            const statsResponse = await axios.get(`${API_BASE_URL}/dashboard/stats`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setStats(statsResponse.data);
+            
+            // 3. Charger les alertes (maintenant filtrées par backend)
+            const alertsResponse = await axios.get(`${API_BASE_URL}/dashboard/alerts/danger`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            
+            const alerts = alertsResponse.data;
+            setAlertes(alerts.slice(0, 10));
+            
+            // 4. Calculer les statistiques horaires
+            const hoursMap = {};
+            for (let i = 0; i < 24; i++) {
+                hoursMap[`${i.toString().padStart(2, '0')}h`] = 0;
+            }
+            
+            alerts.forEach(alerte => {
+                if (alerte.created_at) {
+                    const dateAlerte = new Date(alerte.created_at);
+                    const h = dateAlerte.getHours().toString().padStart(2, '0') + 'h';
+                    if (hoursMap[h] !== undefined) {
+                        hoursMap[h] += 1;
+                    }
+                }
+            });
+            
+            setAlerteData(Object.keys(hoursMap).map(h => ({ h, nb: hoursMap[h] })));
+            
+        } catch (error) {
+            console.error("Erreur chargement données:", error);
+            if (error.response?.status === 401) {
+                // Token invalide, rediriger vers login
+                localStorage.clear();
+                window.location.href = '/login';
+            }
+        }
+    };
 
     useEffect(() => {
-        getDashboardStats().then(setStats).catch(console.error);
-
-        const fetchAlertData = async () => {
-            const token = localStorage.getItem('token');
-            try {
-                const response = await fetch(`${BASE_URL}/alerts/danger`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    setAlertes(data.slice(0, 10));
-
-                    const hoursMap = {};
-                    for (let i = 0; i < 24; i++) {
-                        hoursMap[`${i.toString().padStart(2, '0')}h`] = 0;
-                    }
-
-                    data.forEach(alerte => {
-                        const dateAlerte = new Date(alerte.created_at);
-                        const h = dateAlerte.getHours().toString().padStart(2, '0') + 'h';
-                        if (hoursMap[h] !== undefined) {
-                            hoursMap[h] += 1;
-                        }
-                    });
-
-                    setAlerteData(Object.keys(hoursMap).map(h => ({ h, nb: hoursMap[h] })));
+        // Charger les données au montage
+        loadUserData();
+        
+        // Rafraîchir toutes les 30 secondes
+        const interval = setInterval(loadUserData, 30000);
+        
+        // ✅ Écouter les changements de localStorage (déconnexion/reconnexion)
+        const handleStorageChange = (e) => {
+            if (e.key === 'token') {
+                if (!e.newValue) {
+                    // Déconnexion
+                    window.location.href = '/login';
+                } else {
+                    // Reconnexion - recharger les données
+                    loadUserData();
                 }
-            } catch (err) { console.error("Erreur alertes:", err); }
+            }
         };
-
-        fetchAlertData();
-        const interval = setInterval(fetchAlertData, 30000);
-        return () => clearInterval(interval);
-    }, []);
+        
+        window.addEventListener('storage', handleStorageChange);
+        
+        return () => {
+            clearInterval(interval);
+            window.removeEventListener('storage', handleStorageChange);
+        };
+    }, []); // ✅ S'exécute une seule fois au montage
 
     return (
         <div className="dashboard-body" style={{ padding: '25px', backgroundColor: '#f8fafc', minHeight: '100vh' }}>
-            
-            {/* 1. SECTION KPI (LES 4 CARTES) */}
+            {/* KPI Cards */}
             <div className="kpi-grid">
                 {[
                     { id: 'blue', icon: '🌐', title: 'Nombre total de Nœuds', value: stats.total_noeuds, sub: 'Tous les nœuds existants' },
@@ -75,17 +134,19 @@ function Body() {
                 ))}
             </div>
 
-            {/* 2. CARTE MÉTÉO - PLEINE LARGEUR */}
+            {/* Météo */}
             <Box sx={{ width: '100%', mb: 3 }}>
                 <MeteoJour />
             </Box>
 
-            {/* 3. SECTION ALERTES - COURBE D'ALERTES + LISTE D'ALERTES (MÊME HAUTEUR) */}
+            {/* Alertes */}
             <Box sx={{ display: 'flex', gap: 3, mb: 3, height: '480px' }}>
-                {/* GRAPHIQUE VOLUME D'ALERTES */}
+                {/* Graphique */}
                 <Box sx={{ flex: 1, minWidth: 0, height: '100%' }}>
                     <div className="card" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 2, color: '#64748b' }}>VOLUME D'ALERTES / HEURE</Typography>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 2, color: '#64748b' }}>
+                            VOLUME D'ALERTES / HEURE
+                        </Typography>
                         <ResponsiveContainer width="100%" height="85%">
                             <AreaChart data={alerteData} margin={{ top: 0, right: 10, left: -20, bottom: 0 }}>
                                 <defs>
@@ -104,42 +165,24 @@ function Body() {
                     </div>
                 </Box>
 
-                {/* LISTE DES ALERTES - MÊME HAUTEUR QUE LA COURBE */}
+                {/* Liste Alertes */}
                 <Box sx={{ width: '380px', minWidth: '380px', display: 'flex', flexDirection: 'column', height: '100%' }}>
-                    <div className="card alert-list-card" style={{ 
-                        flex: 1, 
-                        display: 'flex', 
-                        flexDirection: 'column', 
-                        padding: 0, 
-                        overflow: 'hidden',
-                        height: '100%'
-                    }}>
-                        {/* TITRE FIXE */}
-                        <div className="alert-list-header" style={{ 
-                            padding: '16px 20px', 
-                            borderBottom: '1px solid #f1f5f9',
-                            backgroundColor: 'white',
-                            position: 'sticky',
-                            top: 0,
-                            zIndex: 10,
-                            borderTopLeftRadius: '20px',
-                            borderTopRightRadius: '20px'
-                        }}>
-                            <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#64748b' }}>10 DERNIÈRES ALERTES</Typography>
+                    <div className="card alert-list-card" style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 0, overflow: 'hidden', height: '100%' }}>
+                        <div className="alert-list-header" style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', backgroundColor: 'white', position: 'sticky', top: 0, zIndex: 10 }}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#64748b' }}>
+                                DERNIÈRES ALERTES
+                            </Typography>
                         </div>
                         
-                        {/* CONTENU SCROLLABLE */}
-                        <div className="alert-list-content" style={{ 
-                            flex: 1, 
-                            overflowY: 'auto', 
-                            padding: '16px'
-                        }}>
+                        <div className="alert-list-content" style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
                             {alertes.map((a) => (
                                 <Box key={a.id} onClick={() => setSelectedAlerte(a)}
                                     sx={{ p: 1.2, mb: 1.2, borderRadius: '12px', bgcolor: '#fff5f5', border: '1px solid #fee2e2', cursor: 'pointer', '&:hover': { bgcolor: '#fecaca' } }}>
-                                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#991b1b', fontSize: '0.85rem' }}>{a.message}</Typography>
+                                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#991b1b', fontSize: '0.85rem' }}>
+                                        {a.message}
+                                    </Typography>
                                     <Typography variant="caption" sx={{ color: '#dc2626', display: 'block' }}>
-                                        {new Date(a.created_at).toLocaleTimeString()} — {a.node?.name || "Station"}
+                                        {a.created_at ? new Date(a.created_at).toLocaleTimeString() : 'N/A'} — {a.node?.name || "Station"}
                                     </Typography>
                                 </Box>
                             ))}
@@ -153,15 +196,16 @@ function Body() {
                 </Box>
             </Box>
 
-            {/* 4. COURBES DES CAPTEURS (Température, Humidité, Qualité de l'air, Pression) - APRÈS LES ALERTES */}
+            {/* Graphes */}
             <Box sx={{ width: '100%', mt: 3 }}>
                 <Graphes />
             </Box>
 
-            {/* POPUP DÉTAILS ALERTES */}
+            {/* Popup Détails */}
             <Dialog open={!!selectedAlerte} onClose={() => setSelectedAlerte(null)} PaperProps={{ sx: { borderRadius: '24px', p: 1 } }}>
                 <DialogTitle sx={{ fontWeight: 800, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    Détails de l'Alerte <IconButton onClick={() => setSelectedAlerte(null)}><CloseIcon /></IconButton>
+                    Détails de l'Alerte 
+                    <IconButton onClick={() => setSelectedAlerte(null)}><CloseIcon /></IconButton>
                 </DialogTitle>
                 <DialogContent dividers>
                     {selectedAlerte && (

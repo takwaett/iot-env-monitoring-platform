@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, String, Enum
+import enum
+from sqlalchemy import Column, Integer, String, Enum, Boolean
+from sqlalchemy.orm import relationship  # Ajout de l'importation pour les relations
 from src.utils.database import Base
-import enum  #role 
 
 class RoleEnum(str, enum.Enum):
     admin = "admin"
@@ -16,3 +17,7 @@ class UserModel(Base):
     motDePasse = Column(String, nullable=False)
     role = Column(Enum(RoleEnum), default=RoleEnum.user)
     reset_code = Column(String, nullable=True)
+    is_verified = Column(Boolean, default=False, nullable=False)
+
+    # Relation bidirectionnelle ajoutée pour valider le back_populates de NodeModel
+    nodes = relationship("NodeModel", back_populates="user", cascade="all, delete-orphan")
