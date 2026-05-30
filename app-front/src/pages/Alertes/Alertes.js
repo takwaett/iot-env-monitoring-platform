@@ -4,14 +4,14 @@ import Sidebar from '../../components/Layout/Sidebar/Sidebar';
 import { getUserProfile } from '../../api/auth';
 import Navbar from '../../components/Layout/Navbar/Navbar';
 import { DataGrid } from '@mui/x-data-grid';
-import { 
+import {
   Button, MenuItem, TextField, Chip, Box, IconButton,
-  Dialog, DialogTitle, DialogContent, DialogActions 
+  Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber'; 
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
-import '../Dashboard/Dashboard.css'; 
+import '../Dashboard/Dashboard.css';
 
 const Alertes = () => {
   const navigate = useNavigate();
@@ -22,19 +22,19 @@ const Alertes = () => {
   const [user, setUser] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [loading, setLoading] = useState(true);
-  
+
   // Filtres
   const [filterAlert, setFilterAlert] = useState('toutes');
   const [filterNode, setFilterNode] = useState('tous');
   const [filterDateStart, setFilterDateStart] = useState('');
   const [filterDateEnd, setFilterDateEnd] = useState('');
 
- 
+
   const [openView, setOpenView] = useState(false);
   const [selectedAlert, setSelectedAlert] = useState(null);
   const [selectedNodeDetails, setSelectedNodeDetails] = useState(null);
 
-  const BASE_URL = "http://localhost:8000";
+  const BASE_URL = process.env.REACT_APP_API_URL;
   const MAIN_BLUE = "#161c2f";
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
@@ -45,7 +45,7 @@ const Alertes = () => {
     return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
   }, [navigate]);
 
- 
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -76,7 +76,7 @@ const Alertes = () => {
       if (nodesRes.ok && sensorsRes.ok) {
         const nodesData = await nodesRes.json();
         const sensorsData = await sensorsRes.json();
-        const nodeMap = {}; 
+        const nodeMap = {};
         const nodeDetailsMap = {};
         nodesData.forEach(n => {
           nodeMap[n.id] = n.name || n.nom;
@@ -85,7 +85,7 @@ const Alertes = () => {
             adresseIP: n.adresseIP || n.IP || 'Adresse IP non disponible'
           };
         });
-        const sensorMap = {}; 
+        const sensorMap = {};
         sensorsData.forEach(s => sensorMap[s.id] = s.name || s.nom);
         setNodes(nodeMap);
         setNodesDetails(nodeDetailsMap);
@@ -106,10 +106,10 @@ const Alertes = () => {
     } catch (err) { console.error(err); }
   }, [getAuthHeader]);
 
-  useEffect(() => { 
+  useEffect(() => {
     if (!loading) {
-      fetchMetadata(); 
-      fetchAlerts(); 
+      fetchMetadata();
+      fetchAlerts();
     }
   }, [fetchMetadata, fetchAlerts, loading]);
   if (loading) {
@@ -119,7 +119,7 @@ const Alertes = () => {
   const filteredRows = alerts.filter((row) => {
     const matchAlert = filterAlert === 'toutes' || row.alert?.toLowerCase() === filterAlert.toLowerCase();
     const matchNode = filterNode === 'tous' || row.node_id.toString() === filterNode.toString();
-    
+
     let matchDate = true;
     if (filterDateStart && filterDateEnd && row.created_at) {
       const rowDate = row.created_at.split('T')[0];
@@ -131,7 +131,7 @@ const Alertes = () => {
       const rowDate = row.created_at.split('T')[0];
       matchDate = rowDate <= filterDateEnd;
     }
-    
+
     return matchAlert && matchNode && matchDate;
   });
 
@@ -141,7 +141,7 @@ const Alertes = () => {
 
     try {
       const nodeResponse = await fetch(`${BASE_URL}/nodes/${alertRow.node_id}`, { headers });
-      
+
       if (nodeResponse.ok) {
         const nodeData = await nodeResponse.json();
         console.log("Données du nœud reçues:", nodeData);
@@ -164,7 +164,7 @@ const Alertes = () => {
         adresseIP: "Erreur de chargement"
       });
     }
-    
+
     setSelectedAlert(alertRow);
     setOpenView(true);
   };
@@ -179,7 +179,7 @@ const Alertes = () => {
   const columns = [
     { field: 'message', headerName: 'Message', flex: 2.5, renderCell: (params) => <span style={{ fontSize: '0.8rem' }}>{params.value}</span> },
     { field: 'created_at', headerName: 'Date de création', flex: 1.2, renderCell: (params) => <span style={{ fontSize: '0.8rem' }}>{new Date(params.value).toLocaleString('fr-FR')}</span> },
-    { 
+    {
       field: 'alert', headerName: 'Alerte', flex: 0.8,
       renderCell: (params) => {
         const style = getSeverityStyle(params.value);
@@ -192,9 +192,9 @@ const Alertes = () => {
       field: 'actions', headerName: 'Actions', width: 100,
       renderCell: (params) => (
         <Box>
-          <IconButton 
-            color="primary" 
-            size="small" 
+          <IconButton
+            color="primary"
+            size="small"
             onClick={() => handleOpenView(params.row)}
             title="Voir les détails"
           >
@@ -208,18 +208,18 @@ const Alertes = () => {
   return (
     <div className={`dashboard-container ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
       <Sidebar />
-      
+
       <div className="main-area">
-        <Navbar 
-          toggleSidebar={toggleSidebar} 
+        <Navbar
+          toggleSidebar={toggleSidebar}
           user={user}
           searchTerm=""
-          setSearchTerm={() => {}}
+          setSearchTerm={() => { }}
         />
-        
+
         <div style={{ padding: '15px 25px', backgroundColor: '#f8f9fa', flex: 1, overflow: 'auto' }}>
           <h2 style={{ color: MAIN_BLUE, fontWeight: 800, margin: '0 0 10px 0', fontSize: '1.3rem' }}>Gestion des Alertes</h2>
-          
+
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mb: 1.5, bgcolor: '#fff', p: '8px 12px', borderRadius: 1, border: '1px solid #e0e0e0', flexWrap: 'wrap' }}>
             <TextField select size="small" label="Alerte" value={filterAlert} onChange={(e) => setFilterAlert(e.target.value)} sx={{ width: 110 }} InputProps={{ style: { fontSize: '0.8rem' } }}>
               <MenuItem value="toutes">Toutes</MenuItem>
@@ -232,58 +232,54 @@ const Alertes = () => {
               {Object.entries(nodes).map(([id, name]) => <MenuItem key={id} value={id}>{name}</MenuItem>)}
             </TextField>
 
-           <TextField 
-  type="date" 
-  size="small" 
-  value={filterDateStart} 
-  onChange={(e) => setFilterDateStart(e.target.value)} 
-  label="Date de  début"
-  InputLabelProps={{ 
-    shrink: true 
-  }}
-  sx={{ 
-    width: 160,
-    "& .MuiInputBase-input": { 
-      fontSize: '0.8rem', 
-      padding: '8.5px 14px',
-    },
-    "& .MuiInputLabel-root": { 
-      backgroundColor: "white", 
-      padding: "0 6px",         
-      marginLeft: "-3px"        
-    },
-    "& fieldset": {
-      top: 0                   
-    }
-  }} 
-/>
+            <TextField
+              type="date"
+              size="small"
+              value={filterDateStart}
+              onChange={(e) => setFilterDateStart(e.target.value)}
+              label="Date de  début"
+              InputLabelProps={{
+                shrink: true
+              }}
+              sx={{
+                width: 160,
+                "& .MuiInputBase-input": {
+                  fontSize: '0.8rem',
+                  padding: '8.5px 14px',
+                },
+                "& .MuiInputLabel-root": {
+                  backgroundColor: "white",
+                  padding: "0 6px",
+                  marginLeft: "-3px"
+                },
+                "& fieldset": {
+                  top: 0
+                }
+              }}
+            />
 
 
-       <TextField 
-  type="date" 
-  size="small" 
-  value={filterDateStart} 
-  onChange={(e) => setFilterDateStart(e.target.value)} 
-  label="Date de fin"
-  InputLabelProps={{ 
-    shrink: true 
-  }}
-  sx={{ 
-    width: 160,
-    "& .MuiInputBase-input": { 
-      fontSize: '0.8rem', 
-      padding: '8.5px 14px',
-    },
-    "& .MuiInputLabel-root": { 
-      backgroundColor: "white", 
-      padding: "0 6px",         
-      marginLeft: "-3px"        
-    },
-    "& fieldset": {
-      top: 0                    
-    }
-  }} 
-/>
+            <TextField
+              type="date"
+              size="small"
+              value={filterDateEnd}
+              onChange={(e) => setFilterDateEnd(e.target.value)}
+              label="Date de fin"
+              InputLabelProps={{ shrink: true }}
+              sx={{
+                width: 160,
+                "& .MuiInputBase-input": {
+                  fontSize: '0.8rem',
+                  padding: '8.5px 14px',
+                },
+                "& .MuiInputLabel-root": {
+                  backgroundColor: "white",
+                  padding: "0 6px",
+                  marginLeft: "-3px"
+                },
+                "& fieldset": { top: 0 }
+              }}
+            />
 
 
             <Button variant="contained" onClick={() => { setFilterAlert('toutes'); setFilterNode('tous'); setFilterDateStart(''); setFilterDateEnd(''); fetchAlerts(); }} sx={{ backgroundColor: MAIN_BLUE, fontWeight: 'bold', ml: 'auto', fontSize: '0.7rem', height: 32 }}>
@@ -293,13 +289,13 @@ const Alertes = () => {
 
           {/* TABLEAU */}
           <div style={{ height: 'calc(100vh - 180px)', background: '#fff', borderRadius: 8, padding: 5, border: '1px solid #e0e0e0' }}>
-            <DataGrid 
-              rows={filteredRows} 
-              columns={columns} 
-              disableRowSelectionOnClick 
-              density="compact" 
-              hideFooterSelectedRowCount 
-              sx={{ border: 'none', '& .MuiDataGrid-columnHeaders': { backgroundColor: '#fafafa', color: MAIN_BLUE, fontWeight: 'bold', fontSize: '0.85rem' } }} 
+            <DataGrid
+              rows={filteredRows}
+              columns={columns}
+              disableRowSelectionOnClick
+              density="compact"
+              hideFooterSelectedRowCount
+              sx={{ border: 'none', '& .MuiDataGrid-columnHeaders': { backgroundColor: '#fafafa', color: MAIN_BLUE, fontWeight: 'bold', fontSize: '0.85rem' } }}
             />
           </div>
         </div>
@@ -317,17 +313,17 @@ const Alertes = () => {
                 <Box sx={{ fontWeight: 'bold', minWidth: '130px', color: MAIN_BLUE }}>Nom du nœud :</Box>
                 <Box>{selectedNodeDetails.name}</Box>
               </Box>
-              
+
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 1.5, bgcolor: '#f5f5f5', borderRadius: 1 }}>
                 <Box sx={{ fontWeight: 'bold', minWidth: '130px', color: MAIN_BLUE }}>Adresse IP :</Box>
                 <Box>{selectedNodeDetails.adresseIP || "Non renseignée"}</Box>
               </Box>
-              
+
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 1.5, bgcolor: '#f5f5f5', borderRadius: 1 }}>
                 <Box sx={{ fontWeight: 'bold', minWidth: '130px', color: MAIN_BLUE }}>Nom du capteur :</Box>
                 <Box>{sensors[selectedAlert.sensor_id] || `ID: ${selectedAlert.sensor_id}`}</Box>
               </Box>
-              
+
               <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, p: 1.5, bgcolor: '#f5f5f5', borderRadius: 1 }}>
                 <Box sx={{ fontWeight: 'bold', minWidth: '130px', color: MAIN_BLUE }}>Message d'alerte :</Box>
                 <Box sx={{ flex: 1 }}>{selectedAlert.message}</Box>

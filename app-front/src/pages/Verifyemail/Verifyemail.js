@@ -7,8 +7,8 @@ function VerifyEmail() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const API_URL = "http://localhost:8000";
-
+  const API_URL = process.env.REACT_APP_API_URL;
+  
   const [email] = useState(location.state?.email || '');
   const [code, setCode] = useState('');
   const [message, setMessage] = useState('');

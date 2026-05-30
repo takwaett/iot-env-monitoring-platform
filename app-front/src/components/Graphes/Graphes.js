@@ -2,12 +2,18 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Paper, Typography, Box, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import TimelineIcon from '@mui/icons-material/Timeline';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import SpeedIcon from '@mui/icons-material/Speed';
+import OpacityIcon from '@mui/icons-material/Opacity';
+import GrassIcon from '@mui/icons-material/Grass';
+import ThermostatIcon from '@mui/icons-material/Thermostat';
 import "./Graphes.css"
 
 function Graphes() {
   const [data, setData] = useState([]);
   const navigate = useNavigate();
-  const BASE_URL = "http://localhost:8000";
+  const BASE_URL = process.env.REACT_APP_API_URL;
 
   // États pour les contrôles de la fenêtre temporelle et du polling
   const [period, setPeriod] = useState('30m');
@@ -96,10 +102,10 @@ function Graphes() {
   };
 
   const sensors = [
-    { title: "Température (°C)", id: 1, color: "#3b82f6", unit: "°C" },
-    { title: "Humidité (%)", id: 2, color: "#10b981", unit: "%" },
-    { title: "Qualité de l'Air (ppm)", id: 3, color: "#8b5cf6", unit: "ppm" },
-    { title: "Pression (hPa)", id: 4, color: "#f59e0b", unit: "hPa" }
+    { title: "Température (°C)", id: 1, color: "#3b82f6", unit: "°C", icon: <ThermostatIcon sx={{ fontSize: '18px', color: '#3b82f6' }} /> },
+    { title: "Humidité (%)", id: 2, color: "#10b981", unit: "%", icon: <OpacityIcon sx={{ fontSize: '18px', color: '#10b981' }} /> },
+    { title: "Qualité de l'Air (ppm)", id: 3, color: "#8b5cf6", unit: "ppm", icon: <GrassIcon sx={{ fontSize: '18px', color: '#8b5cf6' }} /> },
+    { title: "Pression (hPa)", id: 4, color: "#f59e0b", unit: "hPa", icon: <SpeedIcon sx={{ fontSize: '18px', color: '#f59e0b' }} /> }
   ];
 
   return (
@@ -107,8 +113,9 @@ function Graphes() {
 
       {/* Sélecteurs visuels ajoutés pour la gestion de la période et de la fréquence */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, p: 1.5, background: '#fff', borderRadius: '15px', border: '1px solid #e2e8f0' }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b' }}>
-          ⏱️ Courbes Temporelles en Temps Réel
+        <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <TimelineIcon sx={{ fontSize: '20px', color: '#3b82f6' }} />
+          Courbes Temporelles en Temps Réel
         </Typography>
         <Box sx={{ display: 'flex', gap: 2 }}>
           <FormControl size="small" sx={{ minWidth: 170 }}>
@@ -123,8 +130,16 @@ function Graphes() {
           <FormControl size="small" sx={{ minWidth: 140 }}>
             <InputLabel>Rafraîchissement</InputLabel>
             <Select value={pollingInterval} label="Rafraîchissement" onChange={(e) => setPollingInterval(Number(e.target.value))} sx={{ borderRadius: '10px' }}>
-              <MenuItem value={30000}>🔄 30 secondes</MenuItem>
-              <MenuItem value={60000}>🔄 1 minute</MenuItem>
+              <MenuItem value={30000}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <RefreshIcon sx={{ fontSize: '16px' }} /> 30 secondes
+                </Box>
+              </MenuItem>
+              <MenuItem value={60000}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <RefreshIcon sx={{ fontSize: '16px' }} /> 1 minute
+                </Box>
+              </MenuItem>
             </Select>
           </FormControl>
         </Box>
@@ -134,13 +149,17 @@ function Graphes() {
       <Box sx={{ display: 'flex', gap: 3, mb: 3, width: '100%' }}>
         <Box sx={{ flex: 1, width: '50%' }}>
           <Paper sx={{ p: 2, borderRadius: '20px', height: '320px', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', border: '1px solid #f0f5f9', transition: '0.3s', '&:hover': { transform: 'translateY(-5px)', boxShadow: '0 10px 20px rgba(0,0,0,0.05)' } }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#334155' }}>{sensors[0].title}</Typography>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#334155', display: 'flex', alignItems: 'center', gap: 1 }}>
+              {sensors[0].icon} {sensors[0].title}
+            </Typography>
             <Box sx={{ flexGrow: 1, minHeight: 0 }}><RenderChart sensorId={sensors[0].id} color={sensors[0].color} unit={sensors[0].unit} /></Box>
           </Paper>
         </Box>
         <Box sx={{ flex: 1, width: '50%' }}>
           <Paper sx={{ p: 2, borderRadius: '20px', height: '320px', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', border: '1px solid #f0f5f9', transition: '0.3s', '&:hover': { transform: 'translateY(-5px)', boxShadow: '0 10px 20px rgba(0,0,0,0.05)' } }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#334155' }}>{sensors[1].title}</Typography>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#334155', display: 'flex', alignItems: 'center', gap: 1 }}>
+              {sensors[1].icon} {sensors[1].title}
+            </Typography>
             <Box sx={{ flexGrow: 1, minHeight: 0 }}><RenderChart sensorId={sensors[1].id} color={sensors[1].color} unit={sensors[1].unit} /></Box>
           </Paper>
         </Box>
@@ -148,13 +167,17 @@ function Graphes() {
       <Box sx={{ display: 'flex', gap: 3, width: '100%' }}>
         <Box sx={{ flex: 1, width: '50%' }}>
           <Paper sx={{ p: 2, borderRadius: '20px', height: '320px', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', border: '1px solid #f0f5f9', transition: '0.3s', '&:hover': { transform: 'translateY(-5px)', boxShadow: '0 10px 20px rgba(0,0,0,0.05)' } }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#334155' }}>{sensors[2].title}</Typography>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#334155', display: 'flex', alignItems: 'center', gap: 1 }}>
+              {sensors[2].icon} {sensors[2].title}
+            </Typography>
             <Box sx={{ flexGrow: 1, minHeight: 0 }}><RenderChart sensorId={sensors[2].id} color={sensors[2].color} unit={sensors[2].unit} /></Box>
           </Paper>
         </Box>
         <Box sx={{ flex: 1, width: '50%' }}>
           <Paper sx={{ p: 2, borderRadius: '20px', height: '320px', display: 'flex', flexDirection: 'column', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', border: '1px solid #f0f5f9', transition: '0.3s', '&:hover': { transform: 'translateY(-5px)', boxShadow: '0 10px 20px rgba(0,0,0,0.05)' } }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#334155' }}>{sensors[3].title}</Typography>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#334155', display: 'flex', alignItems: 'center', gap: 1 }}>
+              {sensors[3].icon} {sensors[3].title}
+            </Typography>
             <Box sx={{ flexGrow: 1, minHeight: 0 }}><RenderChart sensorId={sensors[3].id} color={sensors[3].color} unit={sensors[3].unit} /></Box>
           </Paper>
         </Box>

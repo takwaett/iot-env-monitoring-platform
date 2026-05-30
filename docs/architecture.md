@@ -1,6 +1,6 @@
 ## Schéma de l'architecture système:
 
-![Architecture Système](./assets/architecture.png)
+![Architecture Système](./images/architecture.png)
 
 ## Description fonctionnelle de l'architecture
 

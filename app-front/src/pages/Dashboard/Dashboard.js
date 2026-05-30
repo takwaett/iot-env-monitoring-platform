@@ -5,6 +5,7 @@ import Navbar from '../../components/Layout/Navbar/Navbar';
 import Sidebar from '../../components/Layout/Sidebar/Sidebar';
 import Body from '../../components/Layout/Body/Body';
 import { getUserProfile } from '../../api/auth';
+import LoadingIcon from '@mui/icons-material/Loop';
 
 function Dashboard() {    
   const navigate = useNavigate();
@@ -37,7 +38,31 @@ function Dashboard() {
   }, [navigate]);
 
   if (loading) {
-    return <div>Chargement...</div>;
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        flexDirection: 'column',
+        gap: '10px'
+      }}>
+        <LoadingIcon style={{ 
+          fontSize: '40px', 
+          color: '#673ab7',
+          animation: 'spin 1s linear infinite'
+        }} />
+        <div style={{ fontSize: '16px', color: '#64748b' }}>Chargement...</div>
+        <style>
+          {`
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}
+        </style>
+      </div>
+    );
   }
 
   return (

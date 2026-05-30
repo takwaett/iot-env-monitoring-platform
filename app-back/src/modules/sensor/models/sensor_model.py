@@ -20,8 +20,7 @@ class SensorModel(Base):
     # Lien vers noeud parent
     node = relationship("NodeModel", back_populates="sensors")
 
-    # ================= CORRECTION : AJOUT DES CASCADES =================
-    # Ces lignes permettent de supprimer les données liées sans erreur d'intégrité SQL
+    
     thresholds = relationship("ThresholdModel", back_populates="sensor", cascade="all, delete-orphan")
     measurement = relationship("MeasurementModel", back_populates="sensor", cascade="all, delete-orphan")
     alerts = relationship("AlertModel", back_populates="sensor", cascade="all, delete-orphan")

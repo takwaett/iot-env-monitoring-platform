@@ -7,6 +7,12 @@ import { DataGrid } from '@mui/x-data-grid';
 import { frFR } from '@mui/x-data-grid/locales'; 
 import { getUserProfile } from '../../api/auth'; 
 import './Historique.css';
+import HistoryIcon from '@mui/icons-material/History';
+import GetAppIcon from '@mui/icons-material/GetApp';
+import ViewListIcon from '@mui/icons-material/ViewList';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import LoopIcon from '@mui/icons-material/Loop';
 
 function Historique() {
   const [date, setDate] = useState("");
@@ -21,8 +27,8 @@ function Historique() {
   const [exporting, setExporting] = useState(false);
   
   const navigate = useNavigate();
-  const BASE_URL = "http://localhost:8000";
-
+  const BASE_URL = process.env.REACT_APP_API_URL;
+  
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   useEffect(() => {
@@ -145,7 +151,31 @@ function Historique() {
   }, [fetchMetadata, fetchHistory, loading]);
   
   if (loading) {
-    return <div>Chargement...</div>;
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        flexDirection: 'column',
+        gap: '10px'
+      }}>
+        <LoopIcon style={{ 
+          fontSize: '40px', 
+          color: '#673ab7',
+          animation: 'spin 1s linear infinite'
+        }} />
+        <div style={{ fontSize: '16px', color: '#64748b' }}>Chargement...</div>
+        <style>
+          {`
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}
+        </style>
+      </div>
+    );
   }
 
   // Fonction pour exporter les données actuellement affichées (alternative côté client)
@@ -230,7 +260,9 @@ function Historique() {
         />
         
         <main style={{ padding: '20px 30px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>📋 Historique des Données</Typography>
+          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <HistoryIcon /> Historique des Données
+          </Typography>
 
           <Paper sx={{ p: 1.5, mb: 2, display: 'flex', gap: 1, alignItems: 'center', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
             <TextField 
@@ -268,6 +300,7 @@ function Historique() {
               variant="contained" 
               onClick={() => { fetchHistory(); }}
               sx={{ bgcolor: '#161c2f', fontWeight: 'bold', px: 2, minWidth: '120px', '&:hover': { bgcolor: '#232d4a' } }}
+              startIcon={<RefreshIcon />}
             >
               VOIR TOUT
             </Button>
@@ -276,6 +309,7 @@ function Historique() {
               variant="contained" 
               onClick={() => { setDate(""); setCapteurFilter("all"); setNoeudFilter("all"); fetchHistory(); }}
               sx={{ bgcolor: '#161c2f', fontWeight: 'bold', px: 2, minWidth: '120px', '&:hover': { bgcolor: '#232d4a' } }}
+              startIcon={<RestartAltIcon />}
             >
               Réinitialiser
             </Button>
@@ -292,8 +326,9 @@ function Historique() {
                 '&:hover': { bgcolor: '#218838' },
                 '&.Mui-disabled': { bgcolor: '#6c757d' }
               }}
+              startIcon={exporting ? <LoopIcon /> : <GetAppIcon />}
             >
-              {exporting ? '📥 Export en cours...' : '📥 Exporter CSV'}
+              {exporting ? 'Export en cours...' : 'Exporter CSV'}
             </Button>
 
             <Button 
@@ -307,8 +342,9 @@ function Historique() {
                 minWidth: '160px',
                 '&:hover': { borderColor: '#138496', backgroundColor: '#e0f7fa' }
               }}
+              startIcon={<ViewListIcon />}
             >
-              📋 Export Vue Actuelle
+              Export Vue Actuelle
             </Button>
           </Paper>
 

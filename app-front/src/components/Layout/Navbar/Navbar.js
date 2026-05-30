@@ -2,8 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Navbar.css';
 import Notification from '../../../components/Notification/Notification';
+import MenuIcon from '@mui/icons-material/Menu';
+import SearchIcon from '@mui/icons-material/Search';
+import PersonIcon from '@mui/icons-material/Person';
+import LogoutIcon from '@mui/icons-material/Logout';
 
-function Navbar({ toggleSidebar, user }) { 
+function Navbar({ toggleSidebar, user }) {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -12,9 +16,9 @@ function Navbar({ toggleSidebar, user }) {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('userName');
-    localStorage.clear(); 
+    localStorage.removeItem('token');
 
-    window.location.href = '/'; 
+    window.location.href = '/';
   };
 
   const handleSearch = (e) => {
@@ -36,19 +40,19 @@ function Navbar({ toggleSidebar, user }) {
   const renderAvatarContent = (size = '40px', fontSize = '16px') => {
     if (user?.image) {
       return (
-        <img 
-          src={user.image} 
-          alt="Profil" 
-          style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover' }} 
+        <img
+          src={user.image}
+          alt="Profil"
+          style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover' }}
         />
       );
     }
     const initiale = user?.prenom?.charAt(0).toUpperCase() || user?.nom?.charAt(0).toUpperCase() || "?";
     return (
       <div style={{
-        width: size, height: size, borderRadius: '50%', 
-        backgroundColor: '#673ab7', color: 'white', 
-        display: 'flex', alignItems: 'center', justifyContent: 'center', 
+        width: size, height: size, borderRadius: '50%',
+        backgroundColor: '#673ab7', color: 'white',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontWeight: 'bold', fontSize: fontSize
       }}>
         {initiale}
@@ -57,45 +61,47 @@ function Navbar({ toggleSidebar, user }) {
   };
 
   return (
-    <div className="header-right" style={{ 
-      position: 'sticky', top: 0, zIndex: 1000, backgroundColor: 'white', 
-      width: '100%', display: 'flex', alignItems: 'center', 
-      justifyContent: 'space-between', padding: '0 20px', 
-      height: '70px', borderBottom: '1px solid #e2e8f0' 
+    <div className="header-right" style={{
+      position: 'sticky', top: 0, zIndex: 1000, backgroundColor: 'white',
+      width: '100%', display: 'flex', alignItems: 'center',
+      justifyContent: 'space-between', padding: '0 20px',
+      height: '70px', borderBottom: '1px solid #e2e8f0'
     }}>
       <div className="navbar-left">
-        <button 
-          className="burger-icon" 
-          onClick={toggleSidebar} 
+        <button
+          className="burger-icon"
+          onClick={toggleSidebar}
           style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer' }}
         >
-          ☰
+          <MenuIcon />
         </button>
         <div className="navbar-titles">
           <h2 style={{ margin: 0 }}>EnviroSense</h2>
-          <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>
+          <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '5px' }}>
             Bienvenue, {user ? `${user.prenom}` : "Chargement..."} 👋
           </p>
         </div>
       </div>
 
       <div className="navbar-right" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-        <div className="search-box">
-          <input 
-            type="text" 
-            placeholder="🔍 Rechercher..." 
-            value={searchTerm} 
-            onChange={(e) => setSearchTerm(e.target.value)} 
-            onKeyDown={handleSearch} 
+        <div className="search-box" style={{ position: 'relative' }}>
+          <SearchIcon style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: '18px' }} />
+          <input
+            type="text"
+            placeholder="Rechercher..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={handleSearch}
+            style={{ paddingLeft: '35px' }}
           />
         </div>
-        
+
         <Notification />
-        
+
         <div className="user-profile-wrapper" ref={dropdownRef} style={{ position: 'relative' }}>
-          <div 
-            className="user-profile" 
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)} 
+          <div
+            className="user-profile"
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
           >
             <div className="user-details" style={{ textAlign: 'right' }}>
@@ -124,24 +130,25 @@ function Navbar({ toggleSidebar, user }) {
                   <div style={{ fontSize: '12px', color: '#64748b', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{user?.email}</div>
                 </div>
               </div>
-              
+
               <ul style={{ listStyle: 'none', margin: '10px 0 0 0', padding: 0 }}>
-                <li 
-                  onClick={() => { navigate('/profil'); setIsDropdownOpen(false); }} 
+                <li
+                  onClick={() => { navigate('/profil'); setIsDropdownOpen(false); }}
                   style={menuItemStyle}
                   onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8fafc'}
                   onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
-                  👤 Mon Profil
+                  <PersonIcon style={{ fontSize: '18px' }} />
+                  Mon Profil
                 </li>
-                {/* MODIFICATION ICI : Appel de handleLogout */}
-                <li 
-                  onClick={handleLogout} 
+                <li
+                  onClick={handleLogout}
                   style={{ ...menuItemStyle, color: '#e11d48', borderTop: '1px solid #f1f5f9' }}
                   onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#fff1f2'}
                   onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
-                  ↪️ Déconnexion
+                  <LogoutIcon style={{ fontSize: '18px' }} />
+                  Déconnexion
                 </li>
               </ul>
             </div>

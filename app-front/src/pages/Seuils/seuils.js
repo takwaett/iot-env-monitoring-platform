@@ -9,6 +9,11 @@ import {
   IconButton, Typography
 } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import CloseIcon from '@mui/icons-material/Close';
+import LoopIcon from '@mui/icons-material/Loop';
 import { getUserProfile } from '../../api/auth'; 
 import '../Dashboard/Dashboard.css';
 
@@ -37,7 +42,7 @@ const Seuils = () => {
     type: ''
   });
 
-  const BASE_URL = "http://localhost:8000"; 
+  const BASE_URL = process.env.REACT_APP_API_URL; 
   const MAIN_BLUE = "#161c2f"; 
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
@@ -96,7 +101,31 @@ const Seuils = () => {
   }, [fetchData, loading]);
 
   if (loading) {
-    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Chargement...</div>;
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        flexDirection: 'column',
+        gap: '10px'
+      }}>
+        <LoopIcon style={{ 
+          fontSize: '40px', 
+          color: MAIN_BLUE,
+          animation: 'spin 1s linear infinite'
+        }} />
+        <div style={{ fontSize: '16px', color: '#64748b' }}>Chargement...</div>
+        <style>
+          {`
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}
+        </style>
+      </div>
+    );
   }
 
   const getNode = (id) => nodes.find(n => n.id === id);
@@ -137,6 +166,7 @@ const Seuils = () => {
               });
               setOpenViewModal(true);
             }}
+            title="Voir les détails"
           >
             <VisibilityIcon fontSize="inherit" />
           </IconButton>
@@ -149,8 +179,9 @@ const Seuils = () => {
               setFormData({ ...params.row });
               setOpenModal(true);
             }}
+            title="Modifier"
           >
-            ✏️
+            <EditIcon fontSize="inherit" />
           </IconButton>
 
           <IconButton
@@ -160,8 +191,9 @@ const Seuils = () => {
               setThresholdToDelete(params.row.id);
               setOpenDeleteDialog(true);
             }}
+            title="Supprimer"
           >
-            🗑️
+            <DeleteIcon fontSize="inherit" />
           </IconButton>
         </Box>
       )
@@ -233,6 +265,7 @@ const Seuils = () => {
             <h2 style={{ color: MAIN_BLUE }}>Gestion des Seuils</h2>
             <Button
               variant="contained"
+              startIcon={<AddIcon />}
               onClick={() => {
                 setEditingId(null);
                 setFormData({ minval: '', maxval: '', sensor_id: '', node_id: '', type: '' });
@@ -261,14 +294,19 @@ const Seuils = () => {
           </div>
         </div>
       </div>
+
+      {/* VIEW MODAL */}
       <Modal open={openViewModal} onClose={() => setOpenViewModal(false)}>
         <Box sx={{
           position: 'absolute', top: '50%', left: '50%',
           transform: 'translate(-50%, -50%)',
           width: 500, bgcolor: 'white', borderRadius: 2, boxShadow: 24, overflow: 'hidden'
         }}>
-          <Box sx={{ p: 2, borderBottom: `2px solid ${MAIN_BLUE}` }}>
+          <Box sx={{ p: 2, borderBottom: `2px solid ${MAIN_BLUE}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography sx={{ fontWeight: 'bold', color: MAIN_BLUE }}>Détails du Seuil</Typography>
+            <IconButton onClick={() => setOpenViewModal(false)} size="small">
+              <CloseIcon />
+            </IconButton>
           </Box>
           <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
             {[
@@ -290,16 +328,21 @@ const Seuils = () => {
           </Box>
         </Box>
       </Modal>
+
+      {/* ADD/EDIT MODAL */}
       <Modal open={openModal} onClose={() => { setOpenModal(false); setEditingId(null); }}>
         <Box sx={{
           position: 'absolute', top: '50%', left: '50%',
           transform: 'translate(-50%, -50%)',
           width: 500, bgcolor: 'white', borderRadius: 2, boxShadow: 24, overflow: 'hidden'
         }}>
-          <Box sx={{ p: 2, borderBottom: `2px solid ${MAIN_BLUE}` }}>
+          <Box sx={{ p: 2, borderBottom: `2px solid ${MAIN_BLUE}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography sx={{ fontWeight: 'bold', color: MAIN_BLUE }}>
               {editingId ? 'Modifier le Seuil' : 'Ajouter un Seuil'}
             </Typography>
+            <IconButton onClick={() => { setOpenModal(false); setEditingId(null); }} size="small">
+              <CloseIcon />
+            </IconButton>
           </Box>
           <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
             <TextField 
@@ -359,7 +402,7 @@ const Seuils = () => {
         </Box>
       </Modal>
 
-  
+      {/* DELETE DIALOG */}
       <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
         <DialogTitle>Supprimer ce seuil ?</DialogTitle>
         <DialogActions sx={{ p: 2 }}>

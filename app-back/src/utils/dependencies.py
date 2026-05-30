@@ -4,12 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from src.utils.config import settings
 from src.utils.security import oauth2_scheme
-from src.utils.database import get_db 
 from src.modules.auth.models.user_model import UserModel
-from src.utils.database import AsyncSessionLocal, Base, engine
 from src.utils.database import AsyncSessionLocal 
-
-
 
 async def get_db():
     async with AsyncSessionLocal() as session:
@@ -32,7 +28,6 @@ async def get_current_user(
             algorithms=[settings.ALGORITHM]
         )
         
-       
         email: str = payload.get("sub")
         if not email:
             raise credentials_exception
@@ -40,7 +35,6 @@ async def get_current_user(
     except JWTError:
         raise credentials_exception
 
-    
     query = select(UserModel).where(UserModel.email == email)
     result = await db.execute(query)
     user = result.scalars().first()

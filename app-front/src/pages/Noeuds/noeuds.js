@@ -5,7 +5,12 @@ import Navbar from '../../components/Layout/Navbar/Navbar';
 import { DataGrid } from '@mui/x-data-grid';
 import { Modal, Box, Button, TextField, MenuItem, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import { getUserProfile } from '../../api/auth'; 
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import CloseIcon from '@mui/icons-material/Close';
+import LoopIcon from '@mui/icons-material/Loop';
+import { getUserProfile } from '../../api/auth';
 import '../Dashboard/Dashboard.css';
 
 const Noeuds = () => {
@@ -18,7 +23,7 @@ const Noeuds = () => {
   const [openView, setOpenView] = useState(false);
   const [selectedNode, setSelectedNode] = useState(null);
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -28,7 +33,7 @@ const Noeuds = () => {
   });
 
   const navigate = useNavigate();
-  const BASE_URL = "http://localhost:8000";
+  const BASE_URL = process.env.REACT_APP_API_URL;
   const MAIN_BLUE = "#161c2f";
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
@@ -66,6 +71,7 @@ const Noeuds = () => {
         });
     }
   }, [navigate]);
+
   useEffect(() => {
     if (!loading) {
       fetchNodes();
@@ -73,7 +79,31 @@ const Noeuds = () => {
   }, [loading]);
 
   if (loading) {
-    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Chargement...</div>;
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        flexDirection: 'column',
+        gap: '10px'
+      }}>
+        <LoopIcon style={{
+          fontSize: '40px',
+          color: MAIN_BLUE,
+          animation: 'spin 1s linear infinite'
+        }} />
+        <div style={{ fontSize: '16px', color: '#64748b' }}>Chargement...</div>
+        <style>
+          {`
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}
+        </style>
+      </div>
+    );
   }
 
   const handleAddOrUpdate = async () => {
@@ -146,8 +176,12 @@ const Noeuds = () => {
           <IconButton color="primary" size="small" onClick={() => handleOpenView(params.row)} title="Voir les détails">
             <VisibilityIcon fontSize="small" />
           </IconButton>
-          <IconButton onClick={() => startEdit(params.row)} sx={{ color: MAIN_BLUE }}>✏️</IconButton>
-          <IconButton color="error" onClick={() => confirmDelete(params.row.id)}>🗑️</IconButton>
+          <IconButton onClick={() => startEdit(params.row)} sx={{ color: MAIN_BLUE }} title="Modifier">
+            <EditIcon fontSize="small" />
+          </IconButton>
+          <IconButton color="error" onClick={() => confirmDelete(params.row.id)} title="Supprimer">
+            <DeleteIcon fontSize="small" />
+          </IconButton>
         </>
       ),
     }
@@ -156,13 +190,13 @@ const Noeuds = () => {
   return (
     <div className={`dashboard-container ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
       <Sidebar />
-      
+
       <div className="main-area">
-        <Navbar 
-          toggleSidebar={toggleSidebar} 
+        <Navbar
+          toggleSidebar={toggleSidebar}
           user={user}
           searchTerm=""
-          setSearchTerm={() => {}}
+          setSearchTerm={() => { }}
         />
 
         <div style={{ padding: 20, backgroundColor: '#f5f5f5', flex: 1 }}>
@@ -171,6 +205,7 @@ const Noeuds = () => {
             <Button
               variant="contained"
               onClick={() => setOpenModal(true)}
+              startIcon={<AddIcon />}
               sx={{ backgroundColor: MAIN_BLUE, '&:hover': { backgroundColor: '#252d45' } }}
             >
               Ajouter
@@ -198,7 +233,12 @@ const Noeuds = () => {
 
       <Modal open={openModal} onClose={handleCloseModal}>
         <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400, bgcolor: 'white', p: 4, borderRadius: 2, boxShadow: 24 }}>
-          <h3 style={{ color: MAIN_BLUE, marginTop: 0 }}>{editingId ? "Modifier" : "Ajouter"} un nœud</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <h3 style={{ color: MAIN_BLUE, marginTop: 0 }}>{editingId ? "Modifier" : "Ajouter"} un nœud</h3>
+            <IconButton onClick={handleCloseModal} size="small">
+              <CloseIcon />
+            </IconButton>
+          </div>
           <TextField fullWidth margin="normal" label="Nom" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
           <TextField fullWidth margin="normal" label="Adresse IP" value={formData.adresseIP} onChange={(e) => setFormData({ ...formData, adresseIP: e.target.value })} />
           <TextField fullWidth margin="normal" label="Localisation" value={formData.localisation} onChange={(e) => setFormData({ ...formData, localisation: e.target.value })} />
@@ -206,9 +246,9 @@ const Noeuds = () => {
             <MenuItem value="Online">Online</MenuItem>
             <MenuItem value="Offline">Offline</MenuItem>
           </TextField>
-          <Button 
-            fullWidth 
-            variant="contained" 
+          <Button
+            fullWidth
+            variant="contained"
             onClick={handleAddOrUpdate}
             sx={{ mt: 2, backgroundColor: MAIN_BLUE, '&:hover': { backgroundColor: '#252d45' } }}
           >

@@ -16,7 +16,13 @@ import {
     Activity,
     AlertTriangle,
     CheckCircle,
-    ShieldAlert
+    ShieldAlert,
+    Flame,
+    CloudRain,
+    Beer,
+    Wind,
+    Droplets,
+    CircleDot
 } from 'lucide-react';
 
 import "./gaz.css";
@@ -27,10 +33,9 @@ import Navbar from '../../components/Layout/Navbar/Navbar';
 import { getUserProfile } from '../../api/auth';
 
 /* ===================== POPUP IMAGE ===================== */
-// Ligne 30 CORRIGÉE
 import gazTable from '../../assets/gazTable.png';
 
-
+import LoopIcon from '@mui/icons-material/Loop';
 
 // Configuration
 const GAS_CONFIG = {
@@ -73,7 +78,7 @@ const GAS_CONFIG = {
         oms: "OMS: 1.0 ppm (8h)",
         osha: "OSHA: 1000 ppm (8h)",
         color: "#ef4444",
-        icon: Activity,
+        icon: Beer,
         getAlert: (v) =>
             v <= 1.0
                 ? { label: "Bon", cl: "badge-green" }
@@ -89,7 +94,7 @@ const GAS_CONFIG = {
         oms: "OMS: 0.001 ppm (24h)",
         osha: "OSHA: 1 ppm (8h)",
         color: "#ef4444",
-        icon: Activity,
+        icon: AlertTriangle,
         getAlert: (v) =>
             v <= 0.001
                 ? { label: "Bon", cl: "badge-green" }
@@ -105,7 +110,7 @@ const GAS_CONFIG = {
         oms: "OMS: 0.15 ppm (24h)",
         osha: "OSHA: 5 ppm (8h)",
         color: "#f59e0b",
-        icon: Activity,
+        icon: Flame,
         getAlert: (v) =>
             v <= 0.15
                 ? { label: "Bon", cl: "badge-green" }
@@ -121,7 +126,7 @@ const GAS_CONFIG = {
         oms: "OMS: 1000 ppm (24h)",
         osha: "OSHA: 5000 ppm (8h)",
         color: "#f59e0b",
-        icon: Activity,
+        icon: CloudRain,
         getAlert: (v) =>
             v <= 800
                 ? { label: "Bon", cl: "badge-green" }
@@ -164,6 +169,7 @@ function Gaz() {
         }
 
     }, [navigate]);
+
     const loadGasDashboard = useCallback(async () => {
         const token = localStorage.getItem('token');
 
@@ -172,10 +178,7 @@ function Gaz() {
             return;
         }
 
-
-
         try {
-            // ✅ URL corrigée pour correspondre exactement au préfixe /measurements et à la route /gas-dashboard
             const response = await fetch(
                 `${BASE_URL}/measurements/gas-dashboard?period=24h`,
                 {
@@ -186,7 +189,6 @@ function Gaz() {
             if (response.ok) {
                 const res = await response.json();
 
-                // ✅ Mapping indispensable pour lier les clés InfluxDB aux clés de votre GAS_CONFIG
                 if (res.status === "success" && res.data) {
                     const formattedData = {
                         NH3: res.data.NH3?.history_24h || [],
@@ -215,7 +217,31 @@ function Gaz() {
         }
     }, [loadGasDashboard, loading]);
 
-    if (loading) return <div>Chargement...</div>;
+    if (loading) return (
+        <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh',
+            flexDirection: 'column',
+            gap: '10px'
+        }}>
+            <LoopIcon style={{
+                fontSize: '40px',
+                color: '#10b981',
+                animation: 'spin 1s linear infinite'
+            }} />
+            <div>Chargement...</div>
+            <style>
+                {`
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                `}
+            </style>
+        </div>
+    );
 
     return (
         <div className={`dashboard-container ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
@@ -334,7 +360,9 @@ function Gaz() {
 
                         <div className="footer-left-content">
 
-                            <div className="info-lamp-circle">💡</div>
+                            <div className="info-lamp-circle">
+                                <ShieldAlert size={20} />
+                            </div>
 
                             <div>
                                 <h4>À propos des seuils</h4>
@@ -359,8 +387,6 @@ function Gaz() {
             </div>
 
 
-            {/* ================= POPUP ================= */}
-            {/* ================= POPUP ================= */}
             {/* ================= POPUP ================= */}
             {openInfo && (
                 <div

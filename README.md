@@ -46,9 +46,9 @@ L’objectif est d’exploiter les technologies IoT pour collecter, transmettre,
 
 ---
 
-# Diagramme d'architecture
+# Architecture système
 
-![diagramme d'architecture](assets/architecture.png)
+![architecture système](/architecture.png)
 
 Il comprend les éléments suivants :
 

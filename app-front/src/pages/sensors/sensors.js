@@ -13,12 +13,17 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
- DialogContentText,
+  DialogContentText,
   DialogTitle,
   IconButton
 } from '@mui/material';
 
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import CloseIcon from '@mui/icons-material/Close';
+import LoopIcon from '@mui/icons-material/Loop';
 
 import { getUserProfile } from '../../api/auth';
 
@@ -69,7 +74,7 @@ const Capteurs = () => {
 
   const navigate = useNavigate();
 
-  const BASE_URL = "http://localhost:8000";
+  const BASE_URL = process.env.REACT_APP_API_URL;
 
   const MAIN_BLUE = "#161c2f";
 
@@ -215,10 +220,25 @@ const Capteurs = () => {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          height: '100vh'
+          height: '100vh',
+          flexDirection: 'column',
+          gap: '10px'
         }}
       >
-        Chargement...
+        <LoopIcon style={{ 
+          fontSize: '40px', 
+          color: MAIN_BLUE,
+          animation: 'spin 1s linear infinite'
+        }} />
+        <div style={{ fontSize: '16px', color: '#64748b' }}>Chargement...</div>
+        <style>
+          {`
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}
+        </style>
       </div>
     );
   }
@@ -429,8 +449,9 @@ const Capteurs = () => {
           <IconButton
             onClick={() => startEdit(params.row)}
             sx={{ color: MAIN_BLUE }}
+            title="Modifier"
           >
-            ✏️
+            <EditIcon fontSize="small" />
           </IconButton>
 
           {/* DELETE */}
@@ -438,8 +459,9 @@ const Capteurs = () => {
           <IconButton
             color="error"
             onClick={() => confirmDelete(params.row.id)}
+            title="Supprimer"
           >
-            🗑️
+            <DeleteIcon fontSize="small" />
           </IconButton>
 
         </>
@@ -502,6 +524,7 @@ const Capteurs = () => {
             <Button
               variant="contained"
               onClick={() => setOpenModal(true)}
+              startIcon={<AddIcon />}
               sx={{
                 backgroundColor: MAIN_BLUE,
                 '&:hover': {
@@ -577,14 +600,19 @@ const Capteurs = () => {
           }}
         >
 
-          <h3
-            style={{
-              color: MAIN_BLUE,
-              marginTop: 0
-            }}
-          >
-            {editingId ? "Modifier" : "Nouveau"} Capteur
-          </h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <h3
+              style={{
+                color: MAIN_BLUE,
+                marginTop: 0
+              }}
+            >
+              {editingId ? "Modifier" : "Nouveau"} Capteur
+            </h3>
+            <IconButton onClick={handleCloseModal} size="small">
+              <CloseIcon />
+            </IconButton>
+          </div>
 
           {/* NAME */}
 

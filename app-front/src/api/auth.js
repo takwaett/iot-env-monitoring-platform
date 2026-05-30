@@ -1,10 +1,10 @@
 import axios from 'axios';
-const API_URL = "http://localhost:8000"; 
+const API_URL = process.env.REACT_APP_API_URL;
 
 export const login = async (email, password) => {
     try {
         const params = new URLSearchParams();
-        params.append('username', email); 
+        params.append('username', email);
         params.append('password', password);
 
         const response = await axios.post(`${API_URL}/auth/login`, params, {
@@ -14,7 +14,7 @@ export const login = async (email, password) => {
         if (response.data && response.data.access_token) {
             localStorage.setItem('token', response.data.access_token);
         }
-        return response.data; 
+        return response.data;
     } catch (error) {
         console.error("Erreur login:", error.response?.data || error.message);
         throw error;
@@ -38,7 +38,7 @@ export const getUserProfile = async () => {
         const response = await axios.get(`${API_URL}/auth/me`, {
             headers: { Authorization: `Bearer ${token}` }
         });
-        return response.data; 
+        return response.data;
     } catch (error) {
         if (error.response?.status === 401) {
             localStorage.removeItem('token');
@@ -53,8 +53,8 @@ export const getDashboardStats = async () => {
 
     try {
         const response = await axios.get(`${API_URL}/dashboard/stats`, {
-            headers: { 
-                Authorization: `Bearer ${token}` 
+            headers: {
+                Authorization: `Bearer ${token}`
             }
         });
         return response.data;

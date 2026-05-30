@@ -5,7 +5,7 @@
 
 ### Diagramme Entité-Relation
 
-![Architecture Système](./assets/database.png)
+![Architecture Système](./images/database.png)
 
 ---
 

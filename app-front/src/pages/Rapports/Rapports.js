@@ -96,7 +96,7 @@ const ConfigModal = ({ type, currentConfig, onClose, onSave }) => {
 
 function Rapports() {
     const navigate = useNavigate();
-    const BASE_URL = "http://localhost:8000";
+    const BASE_URL = process.env.REACT_APP_API_URL;
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [user, setUser] = useState(null);
@@ -498,41 +498,19 @@ function Rapports() {
         setShowConfigModal(true);
     };
 
-    // Save config
+    // Save config - SANS ALERTE POPUP
     const handleSaveConfig = async (config) => {
         try {
-
             if (configType === 'daily') {
                 setDailyConfig(config);
-
-                localStorage.setItem(
-                    'daily_report_config',
-                    JSON.stringify(config)
-                );
-
+                localStorage.setItem('daily_report_config', JSON.stringify(config));
             } else {
-
                 setWeeklyConfig(config);
-
-                localStorage.setItem(
-                    'weekly_report_config',
-                    JSON.stringify(config)
-                );
+                localStorage.setItem('weekly_report_config', JSON.stringify(config));
             }
-
-            alert(
-                `Configuration ${configType === 'daily'
-                    ? 'quotidienne'
-                    : 'hebdomadaire'
-                } enregistrée avec succès`
-            );
-
             setShowConfigModal(false);
-
         } catch (error) {
-
             console.error("Erreur sauvegarde config:", error);
-
             alert("Erreur lors de la sauvegarde de la configuration");
         }
     };
